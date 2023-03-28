@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="meters_label">Метры</string>
+    <string name="feets_label">Футы</string>
+    <string name="kilometers_label">Километры</string>
+    <string name="miles_label">Мили</string>
+    <string name="centimeters_label">Сантиметры</string>
+    <string name="inches_label">Дюймы</string>
+</resources>

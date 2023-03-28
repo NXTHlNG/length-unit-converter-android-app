@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="unit_array">
+        <item>Километры</item>
+        <item>Метры</item>
+        <item>Сантиметры</item>
+        <item>Мили</item>
+        <item>Футы</item>
+        <item>Дюймы</item>
+    </string-array>
+</resources>
