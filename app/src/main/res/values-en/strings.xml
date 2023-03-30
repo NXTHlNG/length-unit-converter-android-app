@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="meters_label">Meters</string>
-    <string name="feets_label">Feets</string>
+    <string name="feet_label">Feet</string>
     <string name="kilometers_label">Kilometers</string>
     <string name="miles_label">Miles</string>
     <string name="centimeters_label">Centimeters</string>
