@@ -7,26 +7,30 @@ import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.View.OnFocusChangeListener
 import android.widget.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private val format = "%.3f"
-
-    private lateinit var unitInput: EditText
+    private var isReversed = false
+    private lateinit var unitFromInput: EditText
+    private lateinit var unitToInput: EditText
     private lateinit var metersValue: TextView
     private lateinit var kilometersValue: TextView
     private lateinit var centimetersValue: TextView
     private lateinit var feetsValue: TextView
     private lateinit var milesValue: TextView
     private lateinit var inchesValue: TextView
-    private lateinit var unitSpinner: Spinner
+    private lateinit var unitFromSpinner: Spinner
+    private lateinit var unitToSpinner: Spinner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        unitInput = findViewById(R.id.unit_input)
+        unitFromInput = findViewById(R.id.unit_from_input)
+        unitToInput = findViewById(R.id.unit_to_input)
         metersValue = findViewById(R.id.meters_value)
         kilometersValue = findViewById(R.id.kilometers_value)
         centimetersValue = findViewById(R.id.centimeters_value)
@@ -34,24 +38,60 @@ class MainActivity : AppCompatActivity() {
         milesValue = findViewById(R.id.miles_value)
         inchesValue = findViewById(R.id.inches_value)
 
-        unitSpinner = findViewById(R.id.unit_spinner)
-        unitSpinner.adapter = ArrayAdapter.createFromResource(
+        unitFromSpinner = findViewById(R.id.unit_from_spinner)
+        unitToSpinner = findViewById(R.id.unit_to_spinner)
+
+        unitFromSpinner.adapter = ArrayAdapter.createFromResource(
             this,
             R.array.unit_array,
             android.R.layout.simple_spinner_item
         )
 
-        unitInput.addTextChangedListener(object : TextWatcher {
+        unitFromInput.onFocusChangeListener =
+            OnFocusChangeListener { view, hasFocus ->
+                if (hasFocus && isReversed) {
+                    isReversed = false
+                }
+            }
+
+        unitToInput.onFocusChangeListener =
+            OnFocusChangeListener { view, hasFocus ->
+                if (hasFocus && !isReversed) {
+                    isReversed = true
+                }
+            }
+
+        unitFromInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                updateConvertedValues()
+                if (!isReversed) updateConvertedValues()
             }
         })
 
-        unitSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        unitToInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                if (isReversed) updateConvertedValues()
+            }
+        })
+
+        unitFromSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
+            ) {
+                updateConvertedValues()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        unitToSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
@@ -104,9 +144,8 @@ class MainActivity : AppCompatActivity() {
         return metersValue / factors[toUnit]!!
     }
 
-    private fun updateConvertedValues() {
-        val inputValue = unitInput.text.toString().toDoubleOrNull() ?: 0.0
-        val inputUnit = when (unitSpinner.selectedItemPosition) {
+    private fun getUnitFromSpinnerPosition(position: Int): String {
+        return when (position) {
             0 -> "kilometers"
             1 -> "meters"
             2 -> "centimeters"
@@ -115,6 +154,31 @@ class MainActivity : AppCompatActivity() {
             5 -> "inches"
             else -> "meters" // Default to meters if no unit is selected
         }
+    }
+
+    private fun updateConvertedValues() {
+        val inputW: EditText
+        val outputW: EditText
+        val inputUnitW: Spinner
+        val outputUnitW: Spinner
+
+        if (!isReversed) {
+            inputW = unitFromInput
+            outputW = unitToInput
+            inputUnitW = unitFromSpinner
+            outputUnitW = unitToSpinner
+        } else {
+            inputW = unitToInput
+            outputW = unitFromInput
+            inputUnitW = unitToSpinner
+            outputUnitW = unitFromSpinner
+        }
+
+        val inputValue = inputW.text.toString().toDoubleOrNull()?.takeIf { it != 0.0 } ?: 0.0
+        val inputUnit = getUnitFromSpinnerPosition(inputUnitW.selectedItemPosition)
+        val outputUnit = getUnitFromSpinnerPosition(outputUnitW.selectedItemPosition)
+
+        outputW.setText(format.format(convertValue(inputValue, inputUnit, outputUnit)))
 
         // Update text views with converted values
         kilometersValue.text = format.format(convertValue(inputValue, inputUnit, "kilometers"))
